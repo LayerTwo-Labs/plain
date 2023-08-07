@@ -49,7 +49,7 @@ impl Cli {
             .unwrap_or_else(|| {
                 dirs::data_dir().expect("couldn't get default datadir, specify --datadir")
             })
-            .join("plain");
+            .join("{{crate_name}}");
         let main_user = self.user_main.clone().unwrap_or_else(|| "user".into());
         let main_password = self
             .password_main

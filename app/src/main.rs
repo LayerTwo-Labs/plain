@@ -11,7 +11,7 @@ fn main() -> anyhow::Result<()> {
 
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "Plain",
+        "{{project-name | title_case}}",
         native_options,
         Box::new(|cc| Box::new(gui::EguiApp::new(app, cc))),
     )

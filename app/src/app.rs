@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 
 use crate::cli::Config;
-use plain::{
-    bip300301::{bitcoin, jsonrpsee, MainClient},
-    miner::Miner,
-    node::{Node, THIS_SIDECHAIN},
-    types::{OutPoint, Output, Transaction},
-    wallet::Wallet,
+
+pub use {{crate_name}} as lib;
+use lib::{
+    bip300301::{self, bitcoin, jsonrpsee, MainClient},
+    miner::{self, Miner},
+    node::{self, Node, THIS_SIDECHAIN},
+    types::{self, OutPoint, Output, Transaction},
+    wallet::{self, Wallet},
+    format_deposit_address,
+
 };
 
 pub struct App {
@@ -87,15 +91,15 @@ impl App {
             let (transactions, fee) = self.node.get_transactions(NUM_TRANSACTIONS)?;
             let coinbase = match fee {
                 0 => vec![],
-                _ => vec![plain::types::Output {
+                _ => vec![types::Output {
                     address: self.wallet.get_new_address()?,
-                    content: plain::types::Content::Value(fee),
+                    content: types::Content::Value(fee),
                 }],
             };
-            let body = plain::types::Body::new(transactions, coinbase);
+            let body = types::Body::new(transactions, coinbase);
             let prev_side_hash = self.node.get_best_hash()?;
             let prev_main_hash = self.miner.drivechain.get_mainchain_tip().await?;
-            let header = plain::types::Header {
+            let header = types::Header {
                 merkle_root: body.compute_merkle_root(),
                 prev_side_hash,
                 prev_main_hash,
@@ -146,7 +150,7 @@ impl App {
     pub fn deposit(&mut self, amount: bitcoin::Amount, fee: bitcoin::Amount) -> Result<(), Error> {
         self.runtime.block_on(async {
             let address = self.wallet.get_new_address()?;
-            let address = plain::format_deposit_address(THIS_SIDECHAIN, &format!("{address}"));
+            let address = format_deposit_address(THIS_SIDECHAIN, &format!("{address}"));
             self.miner
                 .drivechain
                 .client
@@ -160,13 +164,13 @@ impl App {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("node error")]
-    Node(#[from] plain::node::Error),
+    Node(#[from] node::Error),
     #[error("wallet error")]
-    Wallet(#[from] plain::wallet::Error),
+    Wallet(#[from] wallet::Error),
     #[error("miner error")]
-    Miner(#[from] plain::miner::Error),
+    Miner(#[from] miner::Error),
     #[error("drivechain error")]
-    Drivechain(#[from] plain::bip300301::Error),
+    Drivechain(#[from] bip300301::Error),
     #[error("io error")]
     Io(#[from] std::io::Error),
     #[error("jsonrpsee error")]

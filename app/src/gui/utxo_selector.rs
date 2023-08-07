@@ -1,9 +1,10 @@
+use crate::app::lib;
 use crate::app::App;
-use plain::{
+use eframe::egui;
+use lib::{
     bip300301::bitcoin,
     types::{GetValue, OutPoint, Output},
 };
-use eframe::egui;
 use std::collections::HashSet;
 
 #[derive(Default)]

@@ -1,8 +1,9 @@
+use crate::app::lib;
 use crate::app::App;
 use eframe::egui;
-use plain::{
+use lib::{
     bip300301::bitcoin,
-    types::{Content, Output},
+    types::{self, Content, Output},
 };
 
 pub struct UtxoCreator {
@@ -84,7 +85,7 @@ impl UtxoCreator {
         ui.horizontal(|ui| {
             match self.utxo_type {
                 UtxoType::Regular => {
-                    let address: Option<plain::types::Address> = self.address.parse().ok();
+                    let address: Option<types::Address> = self.address.parse().ok();
                     let value: Option<bitcoin::Amount> =
                         bitcoin::Amount::from_str_in(&self.value, bitcoin::Denomination::Bitcoin)
                             .ok();

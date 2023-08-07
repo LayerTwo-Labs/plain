@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
-use crate::app::App;
-use plain::{bip300301::bitcoin, types::GetValue};
+use crate::app::{lib, App};
 use eframe::egui;
+use lib::{bip300301::bitcoin, types::GetValue};
 
 mod block_explorer;
 mod deposit;

@@ -1,0 +1,3 @@
+[placeholders.slot_number]
+type = "string"
+prompt = "Sidechain Slot Number"
