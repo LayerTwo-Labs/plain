@@ -17,7 +17,7 @@ pub struct State {
 }
 
 impl State {
-    pub const NUM_DBS: u32 = 5;
+    pub const NUM_DBS: u32 = 4;
     pub const WITHDRAWAL_BUNDLE_FAILURE_GAP: u32 = 4;
 
     pub fn new(env: &heed::Env) -> Result<Self, Error> {
@@ -384,7 +384,6 @@ pub enum Error {
     Heed(#[from] heed::Error),
     #[error("utxo {outpoint} doesn't exist")]
     NoUtxo { outpoint: OutPoint },
-    // TODO: Write better errors!
     #[error("value in is less than value out")]
     NotEnoughValueIn,
     #[error("total fees less than coinbase value")]

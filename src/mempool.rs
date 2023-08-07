@@ -9,7 +9,7 @@ pub struct MemPool {
 }
 
 impl MemPool {
-    pub const NUM_DBS: u32 = 1;
+    pub const NUM_DBS: u32 = 2;
 
     pub fn new(env: &heed::Env) -> Result<Self, Error> {
         let transactions = env.create_database(Some("transactions"))?;
