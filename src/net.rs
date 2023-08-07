@@ -205,12 +205,6 @@ pub enum Error {
     SendDatagram(#[from] quinn::SendDatagramError),
     #[error("quinn rustls error")]
     QuinnRustls(#[from] quinn::crypto::rustls::Error),
-    #[error("archive error")]
-    Archive(#[from] crate::archive::Error),
-    #[error("drivechain error")]
-    Drivechain(#[from] bip300301::Error),
-    #[error("mempool error")]
-    MemPool(#[from] crate::mempool::Error),
     #[error("bincode error")]
     Bincode(#[from] bincode::Error),
     #[error("already connected to peer at {0}")]
