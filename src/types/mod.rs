@@ -1,6 +1,6 @@
+use bip300301::bitcoin;
 use serde::{Deserialize, Serialize};
 use std::{cmp::Ordering, collections::HashMap};
-use bip300301::bitcoin;
 
 mod address;
 mod hashes;

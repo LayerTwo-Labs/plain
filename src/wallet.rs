@@ -13,7 +13,7 @@ use std::path::Path;
 #[derive(Clone)]
 pub struct Wallet {
     env: heed::Env,
-    // FIXME: Don't store the seed in ddktext.
+    // FIXME: Don't store the seed in plaintext.
     seed: Database<OwnedType<u8>, OwnedType<[u8; 64]>>,
     pub address_to_index: Database<SerdeBincode<Address>, OwnedType<[u8; 4]>>,
     pub index_to_address: Database<OwnedType<[u8; 4]>, SerdeBincode<Address>>,

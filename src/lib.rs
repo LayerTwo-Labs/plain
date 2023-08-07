@@ -1,12 +1,12 @@
 pub mod archive;
+pub mod authorization;
 pub mod mempool;
 pub mod miner;
 pub mod net;
 pub mod node;
-pub mod wallet;
-pub mod authorization;
-pub mod types;
 pub mod state;
+pub mod types;
+pub mod wallet;
 
 pub use heed;
 

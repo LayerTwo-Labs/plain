@@ -1,12 +1,12 @@
 use crate::authorization::Authorization;
 use crate::types::*;
 use bip300301::TwoWayPegData;
+use bip300301::{bitcoin, WithdrawalBundleStatus};
 pub use heed;
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
-use bip300301::{bitcoin, WithdrawalBundleStatus};
 
 #[derive(Clone)]
 pub struct State {

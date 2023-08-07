@@ -1,9 +1,9 @@
 use crate::types::*;
+use bip300301::bitcoin;
 use bip300301::Drivechain;
 use bitcoin::hashes::Hash as _;
 use std::net::SocketAddr;
 use std::str::FromStr as _;
-use bip300301::bitcoin;
 
 pub use bip300301::MainClient;
 
