@@ -1,10 +1,11 @@
-use crate::consensus::drivechain::Drivechain;
 use crate::consensus::types::*;
+use bip300301::Drivechain;
 use bitcoin::hashes::Hash as _;
 use std::net::SocketAddr;
 use std::str::FromStr as _;
+use bip300301::bitcoin;
 
-pub use crate::consensus::drivechain::MainClient;
+pub use bip300301::MainClient;
 
 #[derive(Clone)]
 pub struct Miner {
@@ -33,7 +34,7 @@ impl Miner {
             .client
             .generate(1)
             .await
-            .map_err(crate::consensus::drivechain::Error::from)?;
+            .map_err(bip300301::Error::from)?;
         Ok(())
     }
 
@@ -58,9 +59,9 @@ impl Miner {
                 &str_hash_prev[str_hash_prev.len() - 8..],
             )
             .await
-            .map_err(crate::consensus::drivechain::Error::from)?;
+            .map_err(bip300301::Error::from)?;
         bitcoin::Txid::from_str(value["txid"]["txid"].as_str().ok_or(Error::InvalidJson)?)
-            .map_err(crate::consensus::drivechain::Error::from)?;
+            .map_err(bip300301::Error::from)?;
         assert_eq!(header.merkle_root, body.compute_merkle_root());
         self.block = Some((header, body));
         Ok(())
@@ -68,7 +69,10 @@ impl Miner {
 
     pub async fn confirm_bmm(&mut self) -> Result<Option<(Header, Body)>, Error> {
         if let Some((header, body)) = self.block.clone() {
-            self.drivechain.verify_bmm(&header).await?;
+            let block_hash = header.hash().into();
+            self.drivechain
+                .verify_bmm(&header.prev_main_hash, &block_hash)
+                .await?;
             self.block = None;
             return Ok(Some((header, body)));
         }
@@ -78,7 +82,7 @@ impl Miner {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("drivechain error")]
-    Drivechain(#[from] crate::consensus::drivechain::Error),
+    Drivechain(#[from] bip300301::Error),
     #[error("invalid jaon")]
     InvalidJson,
 }

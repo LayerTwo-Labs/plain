@@ -1,4 +1,5 @@
 use bitcoin::hashes::Hash as _;
+use bip300301::bitcoin;
 
 const BLAKE3_LENGTH: usize = 32;
 pub type Hash = [u8; BLAKE3_LENGTH];

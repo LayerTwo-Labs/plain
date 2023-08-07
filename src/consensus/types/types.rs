@@ -3,6 +3,7 @@ pub use crate::consensus::types::address::*;
 pub use crate::consensus::types::hashes::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use bip300301::bitcoin;
 
 #[derive(Hash, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OutPoint {

@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::{cmp::Ordering, collections::HashMap};
+use bip300301::bitcoin;
 
 mod address;
 mod hashes;
 mod types;
 
-pub use bitcoin;
 pub use blake3;
 pub use bs58;
 pub use serde;

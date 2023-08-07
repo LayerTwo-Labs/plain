@@ -1,10 +1,12 @@
 use crate::consensus::authorization::Authorization;
 use crate::consensus::types::*;
+use bip300301::TwoWayPegData;
 pub use heed;
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use bip300301::{bitcoin, WithdrawalBundleStatus};
 
 #[derive(Clone)]
 pub struct State {
@@ -296,7 +298,14 @@ impl State {
             self.last_deposit_block.put(txn, &0, &deposit_block_hash)?;
         }
         for (outpoint, deposit) in &two_way_peg_data.deposits {
-            self.utxos.put(txn, outpoint, deposit)?;
+            if let Ok(address) = deposit.address.parse() {
+                let outpoint = OutPoint::Deposit(*outpoint);
+                let output = Output {
+                    address,
+                    content: Content::Value(deposit.value),
+                };
+                self.utxos.put(txn, &outpoint, &output)?;
+            }
         }
 
         // Handle withdrawals.

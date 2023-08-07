@@ -208,7 +208,7 @@ pub enum Error {
     #[error("archive error")]
     Archive(#[from] crate::archive::Error),
     #[error("drivechain error")]
-    Drivechain(#[from] crate::consensus::drivechain::Error),
+    Drivechain(#[from] bip300301::Error),
     #[error("mempool error")]
     MemPool(#[from] crate::mempool::Error),
     #[error("bincode error")]

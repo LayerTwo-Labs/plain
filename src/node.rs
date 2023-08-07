@@ -18,7 +18,7 @@ pub struct Node {
     state: crate::consensus::state::State,
     archive: crate::archive::Archive,
     mempool: crate::mempool::MemPool,
-    drivechain: crate::consensus::drivechain::Drivechain,
+    drivechain: bip300301::Drivechain,
     env: heed::Env,
 }
 
@@ -44,7 +44,7 @@ impl Node {
         let state = crate::consensus::state::State::new(&env)?;
         let archive = crate::archive::Archive::new(&env)?;
         let mempool = crate::mempool::MemPool::new(&env)?;
-        let drivechain = crate::consensus::drivechain::Drivechain::new(
+        let drivechain = bip300301::Drivechain::new(
             THIS_SIDECHAIN,
             main_addr,
             user,
@@ -485,7 +485,7 @@ pub enum Error {
     #[error("archive error")]
     Archive(#[from] crate::archive::Error),
     #[error("drivechain error")]
-    Drivechain(#[from] crate::consensus::drivechain::Error),
+    Drivechain(#[from] bip300301::Error),
     #[error("mempool error")]
     MemPool(#[from] crate::mempool::Error),
     #[error("state error")]

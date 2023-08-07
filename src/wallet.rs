@@ -1,7 +1,8 @@
 pub use crate::consensus::authorization::{get_address, Authorization};
 use crate::consensus::types::{
-    bitcoin, Address, AuthorizedTransaction, Content, GetValue, OutPoint, Output, Transaction,
+    Address, AuthorizedTransaction, Content, GetValue, OutPoint, Output, Transaction,
 };
+use bip300301::bitcoin;
 use byteorder::{BigEndian, ByteOrder};
 use ed25519_dalek_bip32::*;
 use heed::types::*;
