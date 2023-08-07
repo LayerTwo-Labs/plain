@@ -6,21 +6,20 @@ use byteorder::{BigEndian, ByteOrder};
 use ed25519_dalek_bip32::*;
 use heed::types::*;
 use heed::{Database, RoTxn};
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 #[derive(Clone)]
-pub struct Wallet<C> {
+pub struct Wallet {
     env: heed::Env,
     // FIXME: Don't store the seed in ddktext.
     seed: Database<OwnedType<u8>, OwnedType<[u8; 64]>>,
     pub address_to_index: Database<SerdeBincode<Address>, OwnedType<[u8; 4]>>,
     pub index_to_address: Database<OwnedType<[u8; 4]>, SerdeBincode<Address>>,
-    pub utxos: Database<SerdeBincode<OutPoint>, SerdeBincode<Output<C>>>,
+    pub utxos: Database<SerdeBincode<OutPoint>, SerdeBincode<Output>>,
 }
 
-impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wallet<C> {
+impl Wallet {
     pub const NUM_DBS: u32 = 5;
 
     pub fn new(path: &Path) -> Result<Self, Error> {
@@ -63,7 +62,7 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
         value: u64,
         main_fee: u64,
         fee: u64,
-    ) -> Result<Transaction<C>, Error> {
+    ) -> Result<Transaction, Error> {
         let (total, coins) = self.select_coins(value + fee + main_fee)?;
         let change = total - value - fee;
         let inputs = coins.into_keys().collect();
@@ -89,7 +88,7 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
         address: Address,
         value: u64,
         fee: u64,
-    ) -> Result<Transaction<C>, Error> {
+    ) -> Result<Transaction, Error> {
         let (total, coins) = self.select_coins(value + fee)?;
         let change = total - value - fee;
         let inputs = coins.into_keys().collect();
@@ -106,7 +105,7 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
         Ok(Transaction { inputs, outputs })
     }
 
-    pub fn select_coins(&self, value: u64) -> Result<(u64, HashMap<OutPoint, Output<C>>), Error> {
+    pub fn select_coins(&self, value: u64) -> Result<(u64, HashMap<OutPoint, Output>), Error> {
         let txn = self.env.read_txn()?;
         let mut utxos = vec![];
         for item in self.utxos.iter(&txn)? {
@@ -141,7 +140,7 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
         Ok(())
     }
 
-    pub fn put_utxos(&self, utxos: &HashMap<OutPoint, Output<C>>) -> Result<(), Error> {
+    pub fn put_utxos(&self, utxos: &HashMap<OutPoint, Output>) -> Result<(), Error> {
         let mut txn = self.env.write_txn()?;
         for (outpoint, output) in utxos {
             self.utxos.put(&mut txn, outpoint, output)?;
@@ -160,7 +159,7 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
         Ok(balance)
     }
 
-    pub fn get_utxos(&self) -> Result<HashMap<OutPoint, Output<C>>, Error> {
+    pub fn get_utxos(&self) -> Result<HashMap<OutPoint, Output>, Error> {
         let txn = self.env.read_txn()?;
         let mut utxos = HashMap::new();
         for item in self.utxos.iter(&txn)? {
@@ -182,8 +181,8 @@ impl<C: GetValue + Clone + Serialize + for<'de> Deserialize<'de> + 'static> Wall
 
     pub fn authorize(
         &self,
-        transaction: Transaction<C>,
-    ) -> Result<AuthorizedTransaction<Authorization, C>, Error> {
+        transaction: Transaction,
+    ) -> Result<AuthorizedTransaction<Authorization>, Error> {
         let txn = self.env.read_txn()?;
         let mut authorizations = vec![];
         for input in &transaction.inputs {

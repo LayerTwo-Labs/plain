@@ -24,14 +24,13 @@ impl std::fmt::Display for OutPoint {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Output<C> {
+pub struct Output {
     pub address: Address,
-    pub content: Content<C>,
+    pub content: Content,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Content<C> {
-    Custom(C),
+pub enum Content {
     Value(u64),
     Withdrawal {
         value: u64,
@@ -40,10 +39,7 @@ pub enum Content<C> {
     },
 }
 
-impl<C> Content<C> {
-    pub fn is_custom(&self) -> bool {
-        matches!(self, Self::Custom(_))
-    }
+impl Content {
     pub fn is_value(&self) -> bool {
         matches!(self, Self::Value(_))
     }
@@ -52,25 +48,17 @@ impl<C> Content<C> {
     }
 }
 
-impl<C> GetAddress for Output<C> {
-    #[inline(always)]
-    fn get_address(&self) -> Address {
-        self.address
-    }
-}
-
-impl<C: GetValue> GetValue for Output<C> {
+impl GetValue for Output {
     #[inline(always)]
     fn get_value(&self) -> u64 {
         self.content.get_value()
     }
 }
 
-impl<C: GetValue> GetValue for Content<C> {
+impl GetValue for Content {
     #[inline(always)]
     fn get_value(&self) -> u64 {
         match self {
-            Self::Custom(custom) => custom.get_value(),
             Self::Value(value) => *value,
             Self::Withdrawal { value, .. } => *value,
         }
@@ -78,24 +66,24 @@ impl<C: GetValue> GetValue for Content<C> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Transaction<C> {
+pub struct Transaction {
     pub inputs: Vec<OutPoint>,
-    pub outputs: Vec<Output<C>>,
+    pub outputs: Vec<Output>,
 }
 
-impl<C: Serialize> Transaction<C> {
+impl Transaction {
     pub fn txid(&self) -> Txid {
         hash(self).into()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FilledTransaction<C> {
-    pub transaction: Transaction<C>,
-    pub spent_utxos: Vec<Output<C>>,
+pub struct FilledTransaction {
+    pub transaction: Transaction,
+    pub spent_utxos: Vec<Output>,
 }
 
-impl<C: GetValue> FilledTransaction<C> {
+impl FilledTransaction {
     pub fn get_value_in(&self) -> u64 {
         self.spent_utxos.iter().map(GetValue::get_value).sum()
     }
@@ -120,23 +108,23 @@ impl<C: GetValue> FilledTransaction<C> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthorizedTransaction<A, C> {
-    pub transaction: Transaction<C>,
+pub struct AuthorizedTransaction<A> {
+    pub transaction: Transaction,
     /// Authorization is called witness in Bitcoin.
     pub authorizations: Vec<A>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body<A, C> {
-    pub coinbase: Vec<Output<C>>,
-    pub transactions: Vec<Transaction<C>>,
+pub struct Body<A> {
+    pub coinbase: Vec<Output>,
+    pub transactions: Vec<Transaction>,
     pub authorizations: Vec<A>,
 }
 
-impl<A, C: Clone + GetValue + Serialize> Body<A, C> {
+impl<A> Body<A> {
     pub fn new(
-        authorized_transactions: Vec<AuthorizedTransaction<A, C>>,
-        coinbase: Vec<Output<C>>,
+        authorized_transactions: Vec<AuthorizedTransaction<A>>,
+        coinbase: Vec<Output>,
     ) -> Self {
         let mut authorizations = Vec::with_capacity(
             authorized_transactions
@@ -169,7 +157,7 @@ impl<A, C: Clone + GetValue + Serialize> Body<A, C> {
             .collect()
     }
 
-    pub fn get_outputs(&self) -> HashMap<OutPoint, Output<C>> {
+    pub fn get_outputs(&self) -> HashMap<OutPoint, Output> {
         let mut outputs = HashMap::new();
         let merkle_root = self.compute_merkle_root();
         for (vout, output) in self.coinbase.iter().enumerate() {
@@ -207,12 +195,12 @@ impl GetValue for () {
     }
 }
 
-pub trait Verify<C> {
+pub trait Verify {
     type Error;
-    fn verify_transaction(transaction: &AuthorizedTransaction<Self, C>) -> Result<(), Self::Error>
+    fn verify_transaction(transaction: &AuthorizedTransaction<Self>) -> Result<(), Self::Error>
     where
         Self: Sized;
-    fn verify_body(body: &Body<Self, C>) -> Result<(), Self::Error>
+    fn verify_body(body: &Body<Self>) -> Result<(), Self::Error>
     where
         Self: Sized;
 }

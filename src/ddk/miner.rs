@@ -1,20 +1,19 @@
 use crate::drivechain::Drivechain;
 use crate::types::*;
 use bitcoin::hashes::Hash as _;
-use jsonrpsee::core::Serialize;
 use std::net::SocketAddr;
 use std::str::FromStr as _;
 
 pub use crate::drivechain::MainClient;
 
 #[derive(Clone)]
-pub struct Miner<A, C> {
-    pub drivechain: Drivechain<C>,
-    block: Option<(Header, Body<A, C>)>,
+pub struct Miner<A> {
+    pub drivechain: Drivechain,
+    block: Option<(Header, Body<A>)>,
     sidechain_number: u8,
 }
 
-impl<A: Clone, C: Clone + GetValue + Serialize> Miner<A, C> {
+impl<A: Clone> Miner<A> {
     pub fn new(
         sidechain_number: u8,
         main_addr: SocketAddr,
@@ -43,7 +42,7 @@ impl<A: Clone, C: Clone + GetValue + Serialize> Miner<A, C> {
         amount: u64,
         height: u32,
         header: Header,
-        body: Body<A, C>,
+        body: Body<A>,
     ) -> Result<(), Error> {
         let str_hash_prev = header.prev_main_hash.to_string();
         let critical_hash: [u8; 32] = header.hash().into();
@@ -67,7 +66,7 @@ impl<A: Clone, C: Clone + GetValue + Serialize> Miner<A, C> {
         Ok(())
     }
 
-    pub async fn confirm_bmm(&mut self) -> Result<Option<(Header, Body<A, C>)>, Error> {
+    pub async fn confirm_bmm(&mut self) -> Result<Option<(Header, Body<A>)>, Error> {
         if let Some((header, body)) = self.block.clone() {
             self.drivechain.verify_bmm(&header).await?;
             self.block = None;

@@ -5,16 +5,15 @@ use base64::Engine as _;
 pub use client::MainClient;
 use jsonrpsee::http_client::{HeaderMap, HttpClient, HttpClientBuilder};
 use std::net::SocketAddr;
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
 #[derive(Clone)]
-pub struct Drivechain<C> {
+pub struct Drivechain {
     pub sidechain_number: u8,
     pub client: HttpClient,
-    pub _content: PhantomData<C>,
 }
 
-impl<C> Drivechain<C> {
+impl Drivechain {
     pub async fn verify_bmm(&self, header: &Header) -> Result<(), Error> {
         let prev_main_hash = header.prev_main_hash;
         let block_hash = self
@@ -37,7 +36,7 @@ impl<C> Drivechain<C> {
         &self,
         end: bitcoin::BlockHash,
         start: Option<bitcoin::BlockHash>,
-    ) -> Result<TwoWayPegData<C>, Error> {
+    ) -> Result<TwoWayPegData, Error> {
         let (deposits, deposit_block_hash) = self.get_deposit_outputs(end, start).await?;
         let bundle_statuses = self.get_withdrawal_bundle_statuses().await?;
         let two_way_peg_data = TwoWayPegData {
@@ -65,7 +64,7 @@ impl<C> Drivechain<C> {
         &self,
         end: bitcoin::BlockHash,
         start: Option<bitcoin::BlockHash>,
-    ) -> Result<(HashMap<OutPoint, Output<C>>, Option<bitcoin::BlockHash>), Error> {
+    ) -> Result<(HashMap<OutPoint, Output>, Option<bitcoin::BlockHash>), Error> {
         let deposits = self
             .client
             .listsidechaindepositsbyblock(self.sidechain_number, Some(end), start)
@@ -145,7 +144,6 @@ impl<C> Drivechain<C> {
         Ok(Drivechain {
             sidechain_number,
             client,
-            _content: PhantomData::default(),
         })
     }
 }

@@ -16,9 +16,9 @@ impl GetAddress for Authorization {
     }
 }
 
-impl<C: Clone + Serialize + for<'de> Deserialize<'de> + Send + Sync> Verify<C> for Authorization {
+impl Verify for Authorization {
     type Error = Error;
-    fn verify_transaction(transaction: &AuthorizedTransaction<Self, C>) -> Result<(), Self::Error>
+    fn verify_transaction(transaction: &AuthorizedTransaction<Self>) -> Result<(), Self::Error>
     where
         Self: Sized,
     {
@@ -26,7 +26,7 @@ impl<C: Clone + Serialize + for<'de> Deserialize<'de> + Send + Sync> Verify<C> f
         Ok(())
     }
 
-    fn verify_body(body: &Body<Self, C>) -> Result<(), Self::Error>
+    fn verify_body(body: &Body<Self>) -> Result<(), Self::Error>
     where
         Self: Sized,
     {
@@ -49,8 +49,8 @@ struct Package<'a> {
     public_keys: Vec<PublicKey>,
 }
 
-pub fn verify_authorized_transaction<C: Clone + Serialize + Sync>(
-    transaction: &AuthorizedTransaction<Authorization, C>,
+pub fn verify_authorized_transaction(
+    transaction: &AuthorizedTransaction<Authorization>,
 ) -> Result<(), Error> {
     let serialized_transaction = bincode::serialize(&transaction.transaction)?;
     let messages: Vec<_> = std::iter::repeat(serialized_transaction.as_slice())
@@ -70,9 +70,7 @@ pub fn verify_authorized_transaction<C: Clone + Serialize + Sync>(
     Ok(())
 }
 
-pub fn verify_authorizations<C: Clone + Serialize + Sync>(
-    body: &Body<Authorization, C>,
-) -> Result<(), Error> {
+pub fn verify_authorizations(body: &Body<Authorization>) -> Result<(), Error> {
     let input_numbers = body
         .transactions
         .iter()
@@ -134,18 +132,15 @@ pub fn verify_authorizations<C: Clone + Serialize + Sync>(
     Ok(())
 }
 
-pub fn sign<C: Clone + Serialize>(
-    keypair: &Keypair,
-    transaction: &Transaction<C>,
-) -> Result<Signature, Error> {
+pub fn sign(keypair: &Keypair, transaction: &Transaction) -> Result<Signature, Error> {
     let message = bincode::serialize(&transaction)?;
     Ok(keypair.sign(&message))
 }
 
-pub fn authorize<C: Clone + Serialize>(
+pub fn authorize(
     addresses_keypairs: &[(Address, &Keypair)],
-    transaction: Transaction<C>,
-) -> Result<AuthorizedTransaction<Authorization, C>, Error> {
+    transaction: Transaction,
+) -> Result<AuthorizedTransaction<Authorization>, Error> {
     let mut authorizations: Vec<Authorization> = Vec::with_capacity(addresses_keypairs.len());
     let message = bincode::serialize(&transaction)?;
     for (address, keypair) in addresses_keypairs {

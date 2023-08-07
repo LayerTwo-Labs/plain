@@ -1,23 +1,19 @@
 use crate::types::*;
-use crate::types::{hash, BlockHash, Body, GetValue};
+use crate::types::{hash, BlockHash, Body};
 use heed::byteorder::{BigEndian, ByteOrder};
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone)]
-pub struct Archive<A, C> {
+pub struct Archive<A> {
     // Block height to header.
     headers: Database<OwnedType<[u8; 4]>, SerdeBincode<Header>>,
-    bodies: Database<OwnedType<[u8; 4]>, SerdeBincode<Body<A, C>>>,
+    bodies: Database<OwnedType<[u8; 4]>, SerdeBincode<Body<A>>>,
     hash_to_height: Database<OwnedType<[u8; 32]>, OwnedType<[u8; 4]>>,
 }
 
-impl<
-        A: Serialize + for<'de> Deserialize<'de> + 'static,
-        C: Clone + Serialize + for<'de> Deserialize<'de> + GetValue + 'static,
-    > Archive<A, C>
-{
+impl<A: Serialize + for<'de> Deserialize<'de> + 'static> Archive<A> {
     pub const NUM_DBS: u32 = 3;
 
     pub fn new(env: &heed::Env) -> Result<Self, Error> {
@@ -37,7 +33,7 @@ impl<
         Ok(header)
     }
 
-    pub fn get_body(&self, txn: &RoTxn, height: u32) -> Result<Option<Body<A, C>>, Error> {
+    pub fn get_body(&self, txn: &RoTxn, height: u32) -> Result<Option<Body<A>>, Error> {
         let height = height.to_be_bytes();
         let header = self.bodies.get(txn, &height)?;
         Ok(header)
@@ -63,7 +59,7 @@ impl<
         &self,
         txn: &mut RwTxn,
         header: &Header,
-        body: &Body<A, C>,
+        body: &Body<A>,
     ) -> Result<(), Error> {
         if header.merkle_root != body.compute_merkle_root() {
             return Err(Error::InvalidMerkleRoot);

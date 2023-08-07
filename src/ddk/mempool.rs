@@ -4,16 +4,12 @@ use heed::{Database, RoTxn, RwTxn};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone)]
-pub struct MemPool<A, C> {
-    pub transactions: Database<OwnedType<[u8; 32]>, SerdeBincode<AuthorizedTransaction<A, C>>>,
+pub struct MemPool<A> {
+    pub transactions: Database<OwnedType<[u8; 32]>, SerdeBincode<AuthorizedTransaction<A>>>,
     pub spent_utxos: Database<SerdeBincode<OutPoint>, Unit>,
 }
 
-impl<
-        A: Serialize + for<'de> Deserialize<'de> + 'static,
-        C: Serialize + for<'de> Deserialize<'de> + 'static,
-    > MemPool<A, C>
-{
+impl<A: Serialize + for<'de> Deserialize<'de> + 'static> MemPool<A> {
     pub const NUM_DBS: u32 = 1;
 
     pub fn new(env: &heed::Env) -> Result<Self, Error> {
@@ -28,7 +24,7 @@ impl<
     pub fn put(
         &self,
         txn: &mut RwTxn,
-        transaction: &AuthorizedTransaction<A, C>,
+        transaction: &AuthorizedTransaction<A>,
     ) -> Result<(), Error> {
         println!(
             "adding transaction {} to mempool",
@@ -50,11 +46,7 @@ impl<
         Ok(())
     }
 
-    pub fn take(
-        &self,
-        txn: &RoTxn,
-        number: usize,
-    ) -> Result<Vec<AuthorizedTransaction<A, C>>, Error> {
+    pub fn take(&self, txn: &RoTxn, number: usize) -> Result<Vec<AuthorizedTransaction<A>>, Error> {
         let mut transactions = vec![];
         for item in self.transactions.iter(txn)?.take(number) {
             let (_, transaction) = item?;
@@ -63,7 +55,7 @@ impl<
         Ok(transactions)
     }
 
-    pub fn take_all(&self, txn: &RoTxn) -> Result<Vec<AuthorizedTransaction<A, C>>, Error> {
+    pub fn take_all(&self, txn: &RoTxn) -> Result<Vec<AuthorizedTransaction<A>>, Error> {
         let mut transactions = vec![];
         for item in self.transactions.iter(txn)? {
             let (_, transaction) = item?;
