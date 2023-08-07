@@ -18,18 +18,12 @@ impl GetAddress for Authorization {
 
 impl Verify for Authorization {
     type Error = Error;
-    fn verify_transaction(transaction: &AuthorizedTransaction<Self>) -> Result<(), Self::Error>
-    where
-        Self: Sized,
-    {
+    fn verify_transaction(transaction: &AuthorizedTransaction) -> Result<(), Self::Error> {
         verify_authorized_transaction(transaction)?;
         Ok(())
     }
 
-    fn verify_body(body: &Body<Self>) -> Result<(), Self::Error>
-    where
-        Self: Sized,
-    {
+    fn verify_body(body: &Body) -> Result<(), Self::Error> {
         verify_authorizations(body)?;
         Ok(())
     }
@@ -49,9 +43,7 @@ struct Package<'a> {
     public_keys: Vec<PublicKey>,
 }
 
-pub fn verify_authorized_transaction(
-    transaction: &AuthorizedTransaction<Authorization>,
-) -> Result<(), Error> {
+pub fn verify_authorized_transaction(transaction: &AuthorizedTransaction) -> Result<(), Error> {
     let serialized_transaction = bincode::serialize(&transaction.transaction)?;
     let messages: Vec<_> = std::iter::repeat(serialized_transaction.as_slice())
         .take(transaction.authorizations.len())
@@ -70,7 +62,7 @@ pub fn verify_authorized_transaction(
     Ok(())
 }
 
-pub fn verify_authorizations(body: &Body<Authorization>) -> Result<(), Error> {
+pub fn verify_authorizations(body: &Body) -> Result<(), Error> {
     let input_numbers = body
         .transactions
         .iter()
@@ -140,7 +132,7 @@ pub fn sign(keypair: &Keypair, transaction: &Transaction) -> Result<Signature, E
 pub fn authorize(
     addresses_keypairs: &[(Address, &Keypair)],
     transaction: Transaction,
-) -> Result<AuthorizedTransaction<Authorization>, Error> {
+) -> Result<AuthorizedTransaction, Error> {
     let mut authorizations: Vec<Authorization> = Vec::with_capacity(addresses_keypairs.len());
     let message = bincode::serialize(&transaction)?;
     for (address, keypair) in addresses_keypairs {

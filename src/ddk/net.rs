@@ -42,35 +42,26 @@ impl Peer {
         Ok(())
     }
 
-    pub async fn request<
-        A: Serialize + for<'de> Deserialize<'de>,
-    >(
-        &self,
-        message: &Request<A>,
-    ) -> Result<Response<A>, Error> {
+    pub async fn request(&self, message: &Request) -> Result<Response, Error> {
         let (mut send, mut recv) = self.connection.open_bi().await?;
         let message = bincode::serialize(message)?;
         send.write_all(&message).await?;
         send.finish().await?;
         let response = recv.read_to_end(READ_LIMIT).await?;
-        let response: Response<A> = bincode::deserialize(&response)?;
+        let response: Response = bincode::deserialize(&response)?;
         Ok(response)
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum Request<A> {
-    GetBlock {
-        height: u32,
-    },
-    PushTransaction {
-        transaction: AuthorizedTransaction<A>,
-    },
+pub enum Request {
+    GetBlock { height: u32 },
+    PushTransaction { transaction: AuthorizedTransaction },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum Response<A> {
-    Block { header: Header, body: Body<A> },
+pub enum Response {
+    Block { header: Header, body: Body },
     NoBlock,
     TransactionAccepted,
     TransactionRejected,

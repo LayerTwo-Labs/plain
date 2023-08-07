@@ -1,3 +1,4 @@
+use crate::authorization::Authorization;
 pub use crate::types::address::*;
 pub use crate::types::hashes::*;
 use serde::{Deserialize, Serialize};
@@ -108,24 +109,21 @@ impl FilledTransaction {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthorizedTransaction<A> {
+pub struct AuthorizedTransaction {
     pub transaction: Transaction,
     /// Authorization is called witness in Bitcoin.
-    pub authorizations: Vec<A>,
+    pub authorizations: Vec<Authorization>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body<A> {
+pub struct Body {
     pub coinbase: Vec<Output>,
     pub transactions: Vec<Transaction>,
-    pub authorizations: Vec<A>,
+    pub authorizations: Vec<Authorization>,
 }
 
-impl<A> Body<A> {
-    pub fn new(
-        authorized_transactions: Vec<AuthorizedTransaction<A>>,
-        coinbase: Vec<Output>,
-    ) -> Self {
+impl Body {
+    pub fn new(authorized_transactions: Vec<AuthorizedTransaction>, coinbase: Vec<Output>) -> Self {
         let mut authorizations = Vec::with_capacity(
             authorized_transactions
                 .iter()
@@ -197,10 +195,6 @@ impl GetValue for () {
 
 pub trait Verify {
     type Error;
-    fn verify_transaction(transaction: &AuthorizedTransaction<Self>) -> Result<(), Self::Error>
-    where
-        Self: Sized;
-    fn verify_body(body: &Body<Self>) -> Result<(), Self::Error>
-    where
-        Self: Sized;
+    fn verify_transaction(transaction: &AuthorizedTransaction) -> Result<(), Self::Error>;
+    fn verify_body(body: &Body) -> Result<(), Self::Error>;
 }

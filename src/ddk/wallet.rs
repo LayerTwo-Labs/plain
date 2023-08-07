@@ -179,10 +179,7 @@ impl Wallet {
         Ok(addresses)
     }
 
-    pub fn authorize(
-        &self,
-        transaction: Transaction,
-    ) -> Result<AuthorizedTransaction<Authorization>, Error> {
+    pub fn authorize(&self, transaction: Transaction) -> Result<AuthorizedTransaction, Error> {
         let txn = self.env.read_txn()?;
         let mut authorizations = vec![];
         for input in &transaction.inputs {

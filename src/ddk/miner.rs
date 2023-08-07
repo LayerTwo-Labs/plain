@@ -7,13 +7,13 @@ use std::str::FromStr as _;
 pub use crate::drivechain::MainClient;
 
 #[derive(Clone)]
-pub struct Miner<A> {
+pub struct Miner {
     pub drivechain: Drivechain,
-    block: Option<(Header, Body<A>)>,
+    block: Option<(Header, Body)>,
     sidechain_number: u8,
 }
 
-impl<A: Clone> Miner<A> {
+impl Miner {
     pub fn new(
         sidechain_number: u8,
         main_addr: SocketAddr,
@@ -42,7 +42,7 @@ impl<A: Clone> Miner<A> {
         amount: u64,
         height: u32,
         header: Header,
-        body: Body<A>,
+        body: Body,
     ) -> Result<(), Error> {
         let str_hash_prev = header.prev_main_hash.to_string();
         let critical_hash: [u8; 32] = header.hash().into();
@@ -66,7 +66,7 @@ impl<A: Clone> Miner<A> {
         Ok(())
     }
 
-    pub async fn confirm_bmm(&mut self) -> Result<Option<(Header, Body<A>)>, Error> {
+    pub async fn confirm_bmm(&mut self) -> Result<Option<(Header, Body)>, Error> {
         if let Some((header, body)) = self.block.clone() {
             self.drivechain.verify_bmm(&header).await?;
             self.block = None;

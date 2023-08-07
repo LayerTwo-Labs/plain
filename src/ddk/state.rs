@@ -1,3 +1,4 @@
+use crate::authorization::Authorization;
 // TODO: Turn this into a cargo generate template.
 use crate::types::*;
 pub use heed;
@@ -5,18 +6,16 @@ use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 #[derive(Clone)]
-pub struct State<A> {
+pub struct State {
     pub utxos: Database<SerdeBincode<OutPoint>, SerdeBincode<Output>>,
     pub pending_withdrawal_bundle: Database<OwnedType<u32>, SerdeBincode<WithdrawalBundle>>,
     pub last_withdrawal_bundle_failure_height: Database<OwnedType<u32>, OwnedType<u32>>,
     pub last_deposit_block: Database<OwnedType<u32>, SerdeBincode<bitcoin::BlockHash>>,
-    pub _body: PhantomData<A>,
 }
 
-impl<A: crate::types::Verify + GetAddress> State<A> {
+impl State {
     pub const NUM_DBS: u32 = 5;
     pub const WITHDRAWAL_BUNDLE_FAILURE_GAP: u32 = 4;
 
@@ -32,7 +31,6 @@ impl<A: crate::types::Verify + GetAddress> State<A> {
             pending_withdrawal_bundle,
             last_withdrawal_bundle_failure_height,
             last_deposit_block,
-            _body: PhantomData::default(),
         })
     }
 
@@ -243,7 +241,7 @@ impl<A: crate::types::Verify + GetAddress> State<A> {
         Ok(value_in - value_out)
     }
 
-    pub fn validate_body(&self, txn: &RoTxn, body: &Body<A>) -> Result<u64, Error> {
+    pub fn validate_body(&self, txn: &RoTxn, body: &Body) -> Result<u64, Error> {
         let mut coinbase_value: u64 = 0;
         for output in &body.coinbase {
             coinbase_value += output.get_value();
@@ -275,7 +273,7 @@ impl<A: crate::types::Verify + GetAddress> State<A> {
                 return Err(Error::WrongPubKeyForAddress);
             }
         }
-        if A::verify_body(body).is_err() {
+        if Authorization::verify_body(body).is_err() {
             return Err(Error::AuthorizationError);
         }
         Ok(total_fees)
@@ -344,7 +342,7 @@ impl<A: crate::types::Verify + GetAddress> State<A> {
         Ok(())
     }
 
-    pub fn connect_body(&self, txn: &mut RwTxn, body: &Body<A>) -> Result<(), Error> {
+    pub fn connect_body(&self, txn: &mut RwTxn, body: &Body) -> Result<(), Error> {
         let merkle_root = body.compute_merkle_root();
         for (vout, output) in body.coinbase.iter().enumerate() {
             let outpoint = OutPoint::Coinbase {
