@@ -1,5 +1,5 @@
-use crate::consensus::{authorization::Authorization, types::*};
 use crate::net::{PeerState, Request, Response};
+use crate::{authorization::Authorization, types::*};
 use heed::RoTxn;
 use std::{
     collections::{HashMap, HashSet},
@@ -15,7 +15,7 @@ const THIS_SIDECHAIN: u8 = 0;
 #[derive(Clone)]
 pub struct Node {
     net: crate::net::Net,
-    state: crate::consensus::state::State,
+    state: crate::state::State,
     archive: crate::archive::Archive,
     mempool: crate::mempool::MemPool,
     drivechain: bip300301::Drivechain,
@@ -36,20 +36,15 @@ impl Node {
         let env = heed::EnvOpenOptions::new()
             .map_size(10 * 1024 * 1024) // 10MB
             .max_dbs(
-                crate::consensus::state::State::NUM_DBS
+                crate::state::State::NUM_DBS
                     + crate::archive::Archive::NUM_DBS
                     + crate::mempool::MemPool::NUM_DBS,
             )
             .open(env_path)?;
-        let state = crate::consensus::state::State::new(&env)?;
+        let state = crate::state::State::new(&env)?;
         let archive = crate::archive::Archive::new(&env)?;
         let mempool = crate::mempool::MemPool::new(&env)?;
-        let drivechain = bip300301::Drivechain::new(
-            THIS_SIDECHAIN,
-            main_addr,
-            user,
-            password,
-        )?;
+        let drivechain = bip300301::Drivechain::new(THIS_SIDECHAIN, main_addr, user, password)?;
         let net = crate::net::Net::new(bind_addr)?;
         Ok(Self {
             net,
@@ -83,11 +78,11 @@ impl Node {
             .zip(filled_transaction.spent_utxos.iter())
         {
             if authorization.get_address() != spent_utxo.address {
-                return Err(crate::consensus::state::Error::WrongPubKeyForAddress.into());
+                return Err(crate::state::Error::WrongPubKeyForAddress.into());
             }
         }
         if Authorization::verify_transaction(transaction).is_err() {
-            return Err(crate::consensus::state::Error::AuthorizationError.into());
+            return Err(crate::state::Error::AuthorizationError.into());
         }
         let fee = self
             .state
@@ -489,7 +484,7 @@ pub enum Error {
     #[error("mempool error")]
     MemPool(#[from] crate::mempool::Error),
     #[error("state error")]
-    State(#[from] crate::consensus::state::Error),
+    State(#[from] crate::state::Error),
     #[error("bincode error")]
     Bincode(#[from] bincode::Error),
 }

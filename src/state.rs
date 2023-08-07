@@ -1,5 +1,5 @@
-use crate::consensus::authorization::Authorization;
-use crate::consensus::types::*;
+use crate::authorization::Authorization;
+use crate::types::*;
 use bip300301::TwoWayPegData;
 pub use heed;
 use heed::types::*;

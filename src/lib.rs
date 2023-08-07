@@ -4,7 +4,9 @@ pub mod miner;
 pub mod net;
 pub mod node;
 pub mod wallet;
-pub mod consensus;
+pub mod authorization;
+pub mod types;
+pub mod state;
 
 pub use heed;
 

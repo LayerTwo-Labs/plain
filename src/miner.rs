@@ -1,4 +1,4 @@
-use crate::consensus::types::*;
+use crate::types::*;
 use bip300301::Drivechain;
 use bitcoin::hashes::Hash as _;
 use std::net::SocketAddr;

@@ -1,9 +1,9 @@
-use crate::consensus::authorization::Authorization;
-pub use crate::consensus::types::address::*;
-pub use crate::consensus::types::hashes::*;
+use crate::authorization::Authorization;
+pub use crate::types::address::*;
+pub use crate::types::hashes::*;
+use bip300301::bitcoin;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use bip300301::bitcoin;
 
 #[derive(Hash, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OutPoint {

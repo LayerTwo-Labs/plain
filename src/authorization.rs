@@ -1,7 +1,5 @@
-use crate::consensus::types::blake3;
-use crate::consensus::types::{
-    Address, AuthorizedTransaction, Body, GetAddress, Transaction, Verify,
-};
+use crate::types::blake3;
+use crate::types::{Address, AuthorizedTransaction, Body, GetAddress, Transaction, Verify};
 pub use ed25519_dalek::{Keypair, PublicKey, Signature, SignatureError, Signer, Verifier};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};

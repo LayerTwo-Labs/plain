@@ -1,5 +1,5 @@
-pub use crate::consensus::authorization::{get_address, Authorization};
-use crate::consensus::types::{
+pub use crate::authorization::{get_address, Authorization};
+use crate::types::{
     Address, AuthorizedTransaction, Content, GetValue, OutPoint, Output, Transaction,
 };
 use bip300301::bitcoin;
@@ -193,7 +193,7 @@ impl Wallet {
                 })?;
             let index = BigEndian::read_u32(&index);
             let keypair = self.get_keypair(&txn, index)?;
-            let signature = crate::consensus::authorization::sign(&keypair, &transaction)?;
+            let signature = crate::authorization::sign(&keypair, &transaction)?;
             authorizations.push(Authorization {
                 public_key: keypair.public,
                 signature,
@@ -255,9 +255,7 @@ pub enum Error {
     #[error("bip32 error")]
     Bip32(#[from] ed25519_dalek_bip32::Error),
     #[error("address {address} does not exist")]
-    AddressDoesNotExist {
-        address: crate::consensus::types::Address,
-    },
+    AddressDoesNotExist { address: crate::types::Address },
     #[error("utxo doesn't exist")]
     NoUtxo,
     #[error("wallet doesn't have a seed")]
@@ -265,7 +263,7 @@ pub enum Error {
     #[error("no index for address {address}")]
     NoIndex { address: Address },
     #[error("authorization error")]
-    Authorization(#[from] crate::consensus::authorization::Error),
+    Authorization(#[from] crate::authorization::Error),
     #[error("io error")]
     Io(#[from] std::io::Error),
     #[error("not enough funds")]

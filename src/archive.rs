@@ -1,5 +1,5 @@
-use crate::consensus::types::*;
-use crate::consensus::types::{hash, BlockHash, Body};
+use crate::types::*;
+use crate::types::{hash, BlockHash, Body};
 use heed::byteorder::{BigEndian, ByteOrder};
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
