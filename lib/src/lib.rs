@@ -9,6 +9,7 @@ pub mod types;
 pub mod wallet;
 
 pub use heed;
+pub use bip300301;
 
 /// Format `str_dest` with the proper `s{sidechain_number}_` prefix and a
 /// checksum postfix for calling createsidechaindeposit on mainchain.
