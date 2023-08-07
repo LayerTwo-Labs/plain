@@ -1,12 +1,11 @@
-use crate::types::*;
-use crate::types::{hash, BlockHash, Body};
+use crate::consensus::types::*;
+use crate::consensus::types::{hash, BlockHash, Body};
 use heed::byteorder::{BigEndian, ByteOrder};
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
 
 #[derive(Clone)]
 pub struct Archive {
-    // Block height to header.
     headers: Database<OwnedType<[u8; 4]>, SerdeBincode<Header>>,
     bodies: Database<OwnedType<[u8; 4]>, SerdeBincode<Body>>,
     hash_to_height: Database<OwnedType<[u8; 32]>, OwnedType<[u8; 4]>>,

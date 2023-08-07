@@ -1,6 +1,6 @@
-pub use crate::authorization::{get_address, Authorization};
-use crate::types::{
-    bitcoin, Address, AuthorizedTransaction, GetValue, OutPoint, Output, Transaction,
+pub use crate::consensus::authorization::{get_address, Authorization};
+use crate::consensus::types::{
+    bitcoin, Address, AuthorizedTransaction, Content, GetValue, OutPoint, Output, Transaction,
 };
 use byteorder::{BigEndian, ByteOrder};
 use ed25519_dalek_bip32::*;
@@ -69,7 +69,7 @@ impl Wallet {
         let outputs = vec![
             Output {
                 address: self.get_new_address()?,
-                content: crate::types::Content::Withdrawal {
+                content: Content::Withdrawal {
                     value,
                     main_fee,
                     main_address,
@@ -77,7 +77,7 @@ impl Wallet {
             },
             Output {
                 address: self.get_new_address()?,
-                content: crate::types::Content::Value(change),
+                content: Content::Value(change),
             },
         ];
         Ok(Transaction { inputs, outputs })
@@ -95,11 +95,11 @@ impl Wallet {
         let outputs = vec![
             Output {
                 address,
-                content: crate::types::Content::Value(value),
+                content: Content::Value(value),
             },
             Output {
                 address: self.get_new_address()?,
-                content: crate::types::Content::Value(change),
+                content: Content::Value(change),
             },
         ];
         Ok(Transaction { inputs, outputs })
@@ -192,7 +192,7 @@ impl Wallet {
                 })?;
             let index = BigEndian::read_u32(&index);
             let keypair = self.get_keypair(&txn, index)?;
-            let signature = crate::authorization::sign(&keypair, &transaction)?;
+            let signature = crate::consensus::authorization::sign(&keypair, &transaction)?;
             authorizations.push(Authorization {
                 public_key: keypair.public,
                 signature,
@@ -254,7 +254,9 @@ pub enum Error {
     #[error("bip32 error")]
     Bip32(#[from] ed25519_dalek_bip32::Error),
     #[error("address {address} does not exist")]
-    AddressDoesNotExist { address: crate::types::Address },
+    AddressDoesNotExist {
+        address: crate::consensus::types::Address,
+    },
     #[error("utxo doesn't exist")]
     NoUtxo,
     #[error("wallet doesn't have a seed")]
@@ -262,7 +264,7 @@ pub enum Error {
     #[error("no index for address {address}")]
     NoIndex { address: Address },
     #[error("authorization error")]
-    Authorization(#[from] crate::authorization::Error),
+    Authorization(#[from] crate::consensus::authorization::Error),
     #[error("io error")]
     Io(#[from] std::io::Error),
     #[error("not enough funds")]

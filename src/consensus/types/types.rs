@@ -1,6 +1,6 @@
-use crate::authorization::Authorization;
-pub use crate::types::address::*;
-pub use crate::types::hashes::*;
+use crate::consensus::authorization::Authorization;
+pub use crate::consensus::types::address::*;
+pub use crate::consensus::types::hashes::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

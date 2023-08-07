@@ -1,6 +1,5 @@
-use crate::authorization::Authorization;
+use crate::consensus::{authorization::Authorization, types::*};
 use crate::net::{PeerState, Request, Response};
-use crate::types::*;
 use heed::RoTxn;
 use std::{
     collections::{HashMap, HashSet},
@@ -16,10 +15,10 @@ const THIS_SIDECHAIN: u8 = 0;
 #[derive(Clone)]
 pub struct Node {
     net: crate::net::Net,
-    state: crate::state::State,
+    state: crate::consensus::state::State,
     archive: crate::archive::Archive,
     mempool: crate::mempool::MemPool,
-    drivechain: crate::drivechain::Drivechain,
+    drivechain: crate::consensus::drivechain::Drivechain,
     env: heed::Env,
 }
 
@@ -37,16 +36,20 @@ impl Node {
         let env = heed::EnvOpenOptions::new()
             .map_size(10 * 1024 * 1024) // 10MB
             .max_dbs(
-                crate::state::State::NUM_DBS
+                crate::consensus::state::State::NUM_DBS
                     + crate::archive::Archive::NUM_DBS
                     + crate::mempool::MemPool::NUM_DBS,
             )
             .open(env_path)?;
-        let state = crate::state::State::new(&env)?;
+        let state = crate::consensus::state::State::new(&env)?;
         let archive = crate::archive::Archive::new(&env)?;
         let mempool = crate::mempool::MemPool::new(&env)?;
-        let drivechain =
-            crate::drivechain::Drivechain::new(THIS_SIDECHAIN, main_addr, user, password)?;
+        let drivechain = crate::consensus::drivechain::Drivechain::new(
+            THIS_SIDECHAIN,
+            main_addr,
+            user,
+            password,
+        )?;
         let net = crate::net::Net::new(bind_addr)?;
         Ok(Self {
             net,
@@ -63,7 +66,7 @@ impl Node {
         Ok(self.archive.get_height(&txn)?)
     }
 
-    pub fn get_best_hash(&self) -> Result<crate::types::BlockHash, Error> {
+    pub fn get_best_hash(&self) -> Result<BlockHash, Error> {
         let txn = self.env.read_txn()?;
         Ok(self.archive.get_best_hash(&txn)?)
     }
@@ -80,11 +83,11 @@ impl Node {
             .zip(filled_transaction.spent_utxos.iter())
         {
             if authorization.get_address() != spent_utxo.address {
-                return Err(crate::state::Error::WrongPubKeyForAddress.into());
+                return Err(crate::consensus::state::Error::WrongPubKeyForAddress.into());
             }
         }
         if Authorization::verify_transaction(transaction).is_err() {
-            return Err(crate::state::Error::AuthorizationError.into());
+            return Err(crate::consensus::state::Error::AuthorizationError.into());
         }
         let fee = self
             .state
@@ -208,8 +211,8 @@ impl Node {
                 .await?;
             let mut txn = self.env.write_txn()?;
             self.state.validate_body(&txn, &body)?;
-            let height = self.archive.get_height(&txn)?;
             self.state.connect_body(&mut txn, &body)?;
+            let height = self.archive.get_height(&txn)?;
             self.state
                 .connect_two_way_peg_data(&mut txn, &two_way_peg_data, height)?;
             let bundle = self.state.get_pending_withdrawal_bundle(&txn)?;
@@ -482,11 +485,11 @@ pub enum Error {
     #[error("archive error")]
     Archive(#[from] crate::archive::Error),
     #[error("drivechain error")]
-    Drivechain(#[from] crate::drivechain::Error),
+    Drivechain(#[from] crate::consensus::drivechain::Error),
     #[error("mempool error")]
     MemPool(#[from] crate::mempool::Error),
     #[error("state error")]
-    State(#[from] crate::state::Error),
+    State(#[from] crate::consensus::state::Error),
     #[error("bincode error")]
     Bincode(#[from] bincode::Error),
 }

@@ -1,4 +1,4 @@
-use crate::types::{AuthorizedTransaction, Body, Header};
+use crate::consensus::types::{AuthorizedTransaction, Body, Header};
 use quinn::{ClientConfig, Connection, Endpoint, ServerConfig};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
@@ -208,7 +208,7 @@ pub enum Error {
     #[error("archive error")]
     Archive(#[from] crate::archive::Error),
     #[error("drivechain error")]
-    Drivechain(#[from] crate::drivechain::Error),
+    Drivechain(#[from] crate::consensus::drivechain::Error),
     #[error("mempool error")]
     MemPool(#[from] crate::mempool::Error),
     #[error("bincode error")]

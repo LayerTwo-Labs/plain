@@ -1,13 +1,12 @@
 pub mod archive;
-pub mod authorization;
-pub mod drivechain;
 pub mod mempool;
 pub mod miner;
 pub mod net;
 pub mod node;
-pub mod state;
-pub mod types;
 pub mod wallet;
+
+pub mod consensus;
+
 pub use bitcoin;
 pub use heed;
 pub use jsonrpsee;

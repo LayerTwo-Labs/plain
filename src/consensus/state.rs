@@ -1,6 +1,5 @@
-use crate::authorization::Authorization;
-// TODO: Turn this into a cargo generate template.
-use crate::types::*;
+use crate::consensus::authorization::Authorization;
+use crate::consensus::types::*;
 pub use heed;
 use heed::types::*;
 use heed::{Database, RoTxn, RwTxn};
@@ -181,7 +180,7 @@ impl State {
             }],
         ]
         .concat();
-        let commitment = crate::types::hash(&inputs);
+        let commitment = hash(&inputs);
         let script = script::Builder::new()
             .push_opcode(opcodes::all::OP_RETURN)
             .push_slice(&commitment)

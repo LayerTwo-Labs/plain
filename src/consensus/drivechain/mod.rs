@@ -1,11 +1,13 @@
 mod client;
-use crate::types::bitcoin::consensus::{Decodable, Encodable};
-use crate::types::*;
+use crate::consensus::types::{
+    bitcoin::consensus::{Decodable, Encodable},
+    *,
+};
 use base64::Engine as _;
 pub use client::MainClient;
 use jsonrpsee::http_client::{HeaderMap, HttpClient, HttpClientBuilder};
-use std::net::SocketAddr;
 use std::collections::HashMap;
+use std::net::SocketAddr;
 
 #[derive(Clone)]
 pub struct Drivechain {
@@ -155,7 +157,7 @@ pub enum Error {
     #[error("header error")]
     InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
     #[error("address parse error")]
-    AddressParse(#[from] crate::types::AddressParseError),
+    AddressParse(#[from] crate::consensus::types::AddressParseError),
     #[error("bitcoin consensus encode error")]
     BitcoinConsensusEncode(#[from] bitcoin::consensus::encode::Error),
     #[error("bitcoin hex error")]
