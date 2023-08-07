@@ -5,8 +5,7 @@ edition = "2021"
 authors = [ "{{authors}}" ]
 
 [dependencies]
-# bip300301 = { git = "https://github.com/nchashch/bip300301", rev = "efb514560e91bbf97f205f1870db0da7be4315f5" }
-bip300301 = { path = "../../bip300301" }
+bip300301 = { git = "https://github.com/nchashch/bip300301", rev = "cf917605ab1937c57f19f72311f96ac0b4832de0" }
 
 bincode = "1.3.3"
 blake3 = "1.4.1"

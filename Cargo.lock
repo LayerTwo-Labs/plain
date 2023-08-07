@@ -452,6 +452,7 @@ dependencies = [
 [[package]]
 name = "bip300301"
 version = "0.1.0"
+source = "git+https://github.com/nchashch/bip300301?rev=cf917605ab1937c57f19f72311f96ac0b4832de0#cf917605ab1937c57f19f72311f96ac0b4832de0"
 dependencies = [
  "base64 0.21.2",
  "bitcoin",
