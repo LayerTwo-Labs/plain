@@ -81,7 +81,7 @@ impl UtxoCreator {
             });
             ui.horizontal(|ui| {
                 ui.monospace("Main Fee:    ");
-                ui.add(egui::TextEdit::singleline(&mut self.main_address));
+                ui.add(egui::TextEdit::singleline(&mut self.main_fee));
                 ui.monospace("BTC");
             });
         }
