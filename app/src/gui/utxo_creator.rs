@@ -74,7 +74,10 @@ impl UtxoCreator {
             ui.horizontal(|ui| {
                 ui.monospace("Main Address:");
                 ui.add(egui::TextEdit::singleline(&mut self.main_address));
-                ui.button("generate");
+                if ui.button("generate").clicked() {
+                    let main_address = app.get_new_main_address().unwrap();
+                    self.main_address = format!("{main_address}");
+                }
             });
             ui.horizontal(|ui| {
                 ui.monospace("Main Fee:    ");
@@ -103,7 +106,39 @@ impl UtxoCreator {
                         app.transaction.outputs.push(utxo);
                     }
                 }
-                UtxoType::Withdrawal => {}
+                UtxoType::Withdrawal => {
+                    let value: Option<bitcoin::Amount> =
+                        bitcoin::Amount::from_str_in(&self.value, bitcoin::Denomination::Bitcoin)
+                            .ok();
+                    let address: Option<types::Address> = self.address.parse().ok();
+                    let main_address: Option<bitcoin::Address<bitcoin::address::NetworkUnchecked>> =
+                        self.main_address.parse().ok();
+                    let main_fee: Option<bitcoin::Amount> = bitcoin::Amount::from_str_in(
+                        &self.main_fee,
+                        bitcoin::Denomination::Bitcoin,
+                    )
+                    .ok();
+                    if ui
+                        .add_enabled(
+                            value.is_some()
+                                && address.is_some()
+                                && main_address.is_some()
+                                && main_fee.is_some(),
+                            egui::Button::new("create"),
+                        )
+                        .clicked()
+                    {
+                        let utxo = Output {
+                            address: address.expect("invalid address"),
+                            content: Content::Withdrawal {
+                                value: value.expect("invalid value").to_sat(),
+                                main_address: main_address.expect("invalid main_address"),
+                                main_fee: main_fee.expect("invalid main_fee").to_sat(),
+                            },
+                        };
+                        app.transaction.outputs.push(utxo);
+                    }
+                }
             }
             let num_addresses = app.wallet.get_num_addresses().unwrap();
             ui.label(format!("{num_addresses} addresses generated"));

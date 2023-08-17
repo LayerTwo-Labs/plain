@@ -84,6 +84,18 @@ impl App {
         Ok(())
     }
 
+    pub fn get_new_main_address(
+        &self,
+    ) -> Result<bitcoin::Address<bitcoin::address::NetworkChecked>, Error> {
+        let address = self
+            .runtime
+            .block_on(self.miner.drivechain.client.getnewaddress("", "legacy"))?;
+        let address: bitcoin::Address<bitcoin::address::NetworkChecked> = address
+            .require_network(bitcoin::Network::Regtest)
+            .unwrap();
+        Ok(address)
+    }
+
     const EMPTY_BLOCK_BMM_BRIBE: u64 = 1000;
     pub fn mine(&mut self) -> Result<(), Error> {
         self.runtime.block_on(async {
