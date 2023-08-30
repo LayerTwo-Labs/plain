@@ -10,8 +10,7 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-// pub const THIS_SIDECHAIN: u8 = {{slot_number}};
-pub const THIS_SIDECHAIN: u8 = 0;
+pub const THIS_SIDECHAIN: u8 = {{slot_number}};
 
 #[derive(Clone)]
 pub struct Node {
