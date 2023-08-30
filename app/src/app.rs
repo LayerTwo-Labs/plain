@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::cli::Config;
 
-pub use {{crate_name}} as lib;
+// pub use {{crate_name}} as lib;
+pub use plain as lib;
 use lib::{
     bip300301::{self, bitcoin, jsonrpsee, MainClient},
     miner::{self, Miner},

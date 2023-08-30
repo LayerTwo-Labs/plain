@@ -1,11 +1,13 @@
 [package]
-name = "{{crate_name}}_app"
+# name = "{{crate_name}}_app"
+name = "plain_app"
 version = "0.1.0"
 edition = "2021"
 authors = [ "{{authors}}" ]
 
 [dependencies]
-{{crate_name}} = { path = "../lib" }
+# {{crate_name}} = { path = "../lib" }
+plain = { path = "../lib" }
 
 anyhow = "1.0.72"
 serde = { version = "1.0.179", features = ["derive"] }

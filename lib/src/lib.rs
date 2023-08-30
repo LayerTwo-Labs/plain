@@ -19,3 +19,5 @@ pub fn format_deposit_address(this_sidechain: u8, str_dest: &str) -> String {
     let hash: String = hash[..6].into();
     format!("{}{}", deposit_address, hash)
 }
+
+// TODO: Add error log.

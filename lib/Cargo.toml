@@ -1,5 +1,6 @@
 [package]
-name = "{{crate_name}}"
+# name = "{{crate_name}}"
+name = "plain"
 version = "0.1.0"
 edition = "2021"
 authors = [ "{{authors}}" ]
