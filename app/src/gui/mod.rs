@@ -11,6 +11,7 @@ mod miner;
 mod seed;
 mod utxo_creator;
 mod utxo_selector;
+mod withdrawals;
 
 use block_explorer::BlockExplorer;
 use deposit::Deposit;
@@ -19,7 +20,7 @@ use miner::Miner;
 use seed::SetSeed;
 use utxo_selector::{show_utxo, UtxoSelector};
 
-use self::utxo_creator::UtxoCreator;
+use self::{utxo_creator::UtxoCreator, withdrawals::Withdrawals};
 
 pub struct EguiApp {
     app: App,
@@ -31,6 +32,7 @@ pub struct EguiApp {
     utxo_creator: UtxoCreator,
     mempool_explorer: MemPoolExplorer,
     block_explorer: BlockExplorer,
+    withdrawals: Withdrawals,
 }
 
 #[derive(Eq, PartialEq)]
@@ -38,10 +40,11 @@ enum Tab {
     TransactionBuilder,
     MemPoolExplorer,
     BlockExplorer,
+    Withdrawals,
 }
 
 impl EguiApp {
-    pub fn new(app: App, cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(app: App, _cc: &eframe::CreationContext<'_>) -> Self {
         // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
         // Restore app state using cc.storage (requires the "persistence" feature).
         // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
@@ -57,6 +60,7 @@ impl EguiApp {
             mempool_explorer: MemPoolExplorer::default(),
             block_explorer: BlockExplorer::new(height),
             tab: Tab::TransactionBuilder,
+            withdrawals: Withdrawals::default(),
         }
     }
 }
@@ -73,6 +77,7 @@ impl eframe::App for EguiApp {
                     );
                     ui.selectable_value(&mut self.tab, Tab::MemPoolExplorer, "mempool explorer");
                     ui.selectable_value(&mut self.tab, Tab::BlockExplorer, "block explorer");
+                    ui.selectable_value(&mut self.tab, Tab::Withdrawals, "withdrawals");
                 });
             });
             egui::TopBottomPanel::bottom("util").show(ctx, |ui| {
@@ -209,6 +214,9 @@ impl eframe::App for EguiApp {
                 }
                 Tab::BlockExplorer => {
                     self.block_explorer.show(&mut self.app, ui);
+                }
+                Tab::Withdrawals => {
+                    self.withdrawals.show(&mut self.app, ui);
                 }
             });
         } else {
